@@ -1,6 +1,5 @@
 package com.example.careertest;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -22,11 +21,8 @@ import com.example.careertest.databinding.PermissionDialogBinding;
 
 public class SplashActivity extends AppCompatActivity {
 
-
     Dialog dialog;
     PermissionDialogBinding permissionBinding;
-    boolean checkConfirmSMS = false;
-    AlertDialog.Builder builder;
     ActivitySplashBinding binding;
 
     @Override
@@ -58,10 +54,10 @@ public class SplashActivity extends AppCompatActivity {
 
         if (requestCode != RESULT_CANCELED) {
 
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                    grantResults[1] == PackageManager.PERMISSION_GRANTED &&
-                    grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, perform your operations here
+//            if (grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+//                    grantResults[1] == PackageManager.PERMISSION_GRANTED &&
+//                    grantResults[2] == PackageManager.PERMISSION_GRANTED) {
+//                // Permission granted, perform your operations here
 
                 //TODO if permission granted
 
@@ -74,7 +70,7 @@ public class SplashActivity extends AppCompatActivity {
                     }
                 };
                 handler.postDelayed(runnable, 500);
-            } else settingDialog();
+//            } else settingDialog();
         }
 
         // Permission denied, show a message or dialog to the user
@@ -140,11 +136,11 @@ public class SplashActivity extends AppCompatActivity {
         permissionBinding.btnPositive.setOnClickListener(view -> {
             ActivityCompat.requestPermissions(SplashActivity.this, new String[]{android.Manifest.permission.CAMERA}, 1);
             dialog.dismiss();
-            checkMemoryDialog();
+//            checkMemoryDialog();
         });
         permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
-            checkMemoryDialog();
+//            checkMemoryDialog();
         });
 
 
