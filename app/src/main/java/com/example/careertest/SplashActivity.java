@@ -11,12 +11,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.careertest.databinding.ActivitySplashBinding;
 import com.example.careertest.databinding.PermissionDialogBinding;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class SplashActivity extends AppCompatActivity {
@@ -24,6 +29,12 @@ public class SplashActivity extends AppCompatActivity {
     Dialog dialog;
     PermissionDialogBinding permissionBinding;
     ActivitySplashBinding binding;
+    Boolean accessSMS = false;
+    Boolean accessCamera = false;
+    Boolean accessMemory = false;
+
+
+    private static final int REQUEST_CODE_PERMISSIONS = 101;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,56 +46,77 @@ public class SplashActivity extends AppCompatActivity {
         //create dialog
         initPermissionDialog();
 
-        checkSMSDialog();
-
-        //TODO check access to resources
-        /*
-         requestCode == 0 SMS
-         .. == 1 Camera
-         .. == 2 Memory
-         */
+        checkPermissionDialog();
 
 
+    }
+
+    private void checkPermissionDialog() {
+
+
+        String[] permissionsNeeded = {
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                android.Manifest.permission.CAMERA,
+                android.Manifest.permission.READ_SMS
+
+        };
+
+        List<String> permissionsToRequest = new ArrayList<>();
+        for (String permission : permissionsNeeded) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(permission);
+                settingDialog();
+            }
+        }
+
+        if (!permissionsToRequest.isEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsToRequest.toArray(new String[0]),
+                    REQUEST_CODE_PERMISSIONS);
+        } else {
+            // All permissions are already granted
+            goMain();
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            boolean allPermissionsGranted = true;
+            if (grantResults.length > 0) {
+                for (int result : grantResults) {
+                    if (result != PackageManager.PERMISSION_GRANTED) {
+                        allPermissionsGranted = false;
+                        break;
+                    }
+                }
+            }
+            if (allPermissionsGranted) {
+                goMain();
+            } else {
+                // Permission denied, disable functionality that depends on this permission.
+                settingDialog();
+            }
+        }
+    }
+
+
+    private void goMain() {
+
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                finish();
+            }
+        };
+        handler.postDelayed(runnable, 50);
     }
 
     // check what its work?????
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode != RESULT_CANCELED) {
-
-//            if (grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-//                    grantResults[1] == PackageManager.PERMISSION_GRANTED &&
-//                    grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-//                // Permission granted, perform your operations here
-
-                //TODO if permission granted
-
-                Handler handler = new Handler();
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        startActivity(new Intent(SplashActivity.this, MainActivity.class));
-                        finish();
-                    }
-                };
-                handler.postDelayed(runnable, 500);
-//            } else settingDialog();
-        }
-
-        // Permission denied, show a message or dialog to the user
-//                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
-//
-//                if (requestCode == 0)
-//                    checkSMSDialog();
-//                else if (requestCode == 1)
-//                    checkCameraDialog();
-//                else if (requestCode == 2)
-//                    checkMemoryDialog();
-
-
-    }
 
     private void initPermissionDialog() {
 
@@ -101,27 +133,33 @@ public class SplashActivity extends AppCompatActivity {
 
     private void checkSMSDialog() {
 
-
         permissionBinding.tvTitleDialog.setText("دسترسی پیامک");
         permissionBinding.tvContentDialog.setText("آیا اجازه دسترسی به پیامک ها را می دهید؟");
         permissionBinding.btnPositive.setText("تایید");
         permissionBinding.btnNegative.setText("لغو");
-        dialog.show();
+
 
         permissionBinding.btnPositive.setOnClickListener(view -> {
-            ActivityCompat.requestPermissions(SplashActivity.this, new String[]{android.Manifest.permission.READ_SMS}, 0);
+            ActivityCompat.requestPermissions(SplashActivity.this, new String[]{android.Manifest.permission.READ_SMS}, REQUEST_CODE_PERMISSIONS);
             dialog.dismiss();
             checkCameraDialog();
         });
         permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
+
             checkCameraDialog();
+
         });
 
+        if (permissionBinding.cbAsk.isChecked()) {
+            permissionBinding.btnPositive.setEnabled(false);
+            permissionBinding.btnPositive.setFocusable(false);
+        }
 
         //TODO Don't ask again
 //        permissionBinding.cbAsk.isChecked() ? permissionBinding.btnPositive.setFocusable(false) : permissionBinding.btnPositive.setFocusable(true)
 
+        dialog.show();
 
     }
 
@@ -131,21 +169,25 @@ public class SplashActivity extends AppCompatActivity {
         permissionBinding.tvContentDialog.setText("آیا اجازه دسترسی به دوربین می دهید؟");
         permissionBinding.btnPositive.setText("تایید");
         permissionBinding.btnNegative.setText("لغو");
-        dialog.show();
+
 
         permissionBinding.btnPositive.setOnClickListener(view -> {
-            ActivityCompat.requestPermissions(SplashActivity.this, new String[]{android.Manifest.permission.CAMERA}, 1);
+            ActivityCompat.requestPermissions(SplashActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CODE_PERMISSIONS);
             dialog.dismiss();
+
+            goMain();
 //            checkMemoryDialog();
         });
         permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
+            settingDialog();
 //            checkMemoryDialog();
         });
 
 
         //TODO Don't ask again
 //        permissionBinding.cbAsk.isChecked() ? permissionBinding.btnPositive.setFocusable(false) : permissionBinding.btnPositive.setFocusable(true)
+        dialog.show();
 
     }
 
@@ -155,17 +197,26 @@ public class SplashActivity extends AppCompatActivity {
         permissionBinding.tvContentDialog.setText("آیا اجازه دسترسی به حافظه می دهید؟");
         permissionBinding.btnPositive.setText("تایید");
         permissionBinding.btnNegative.setText("لغو");
-        dialog.show();
+
 
         permissionBinding.btnPositive.setOnClickListener(view -> {
-            ActivityCompat.requestPermissions(SplashActivity.this, new String[]{android.Manifest.permission.MANAGE_EXTERNAL_STORAGE}, 2);
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
             dialog.dismiss();
-            settingDialog();
+//            goMain();
+//            settingDialog();
         });
         permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
+//goMain();
             settingDialog();
         });
+
+
+//        if (!permissionBinding.cbAsk.isChecked()) {
+//            permissionBinding.btnPositive.setFocusable(false);
+//            accessMemory = false;
+//        }
+        dialog.show();
 
     }
 
@@ -185,23 +236,10 @@ public class SplashActivity extends AppCompatActivity {
             Uri uri = Uri.fromParts("package", getPackageName(), null);
             intent.setData(uri);
             startActivity(intent);
+            checkPermissionDialog();
         });
 
 
-
-        /*
-        builder = new AlertDialog.Builder(this);
-        builder.setTitle("تنطیمات")
-                .setMessage("در صورتی که دسترسی های خواسته شده را به برنامه بدهید، میتوانید از آن استفاده کنید.")
-                .setPositiveButton("تنظیمات", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-
-                    }
-                })
-                .show();
-         */
 
     }
 

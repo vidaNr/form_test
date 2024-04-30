@@ -17,4 +17,7 @@
     <style name="NumberPickerTextColorStyle" >
         <item name="android:textColorPrimary">@color/purple_dark</item>
     </style>
+<!--    <style name="FontFamily" >-->
+<!--        <item name="android:fontFamily">@font/Far_Yekan</item>-->
+<!--    </style>-->
 </resources>

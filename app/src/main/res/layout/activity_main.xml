@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/content2"
     android:orientation="vertical">
 
     <com.makeramen.roundedimageview.RoundedImageView
@@ -13,36 +13,38 @@
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="80dp"
         android:src="@drawable/img_user"
+        app:layout_constraintBottom_toTopOf="@id/iet_name_parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/iet_name_parent"
         app:riv_corner_radius="50dp" />
 
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/iet_name_parent"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_marginVertical="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:fontFamily="@font/fanavari_regular"
         android:gravity="end"
         android:hint="نام و نام خانوادگی"
         android:textColorHint="@color/content1"
         app:layout_constraintStart_toStartOf="parent"
         app:boxStrokeColor="@color/purple_dark"
         app:boxStrokeWidth="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/riv_prof">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/iet_name"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
+            android:fontFamily="@font/fanavari_regular"
             android:inputType="text"
             android:textColor="@color/content1"
-            android:layout_height="wrap_content"
-            android:textSize="18sp" />
+            android:textSize="22sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
@@ -50,10 +52,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="40dp"
+        android:fontFamily="@font/fanavari_regular"
         android:text="جنسیت:"
         android:textColor="@color/black"
-        android:textSize="18sp"
-        android:layout_marginTop="40dp"
+        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/iet_name_parent" />
 
@@ -70,20 +73,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
+            android:buttonTint="@color/purple_dark"
+            android:fontFamily="@font/fanavari_regular"
             android:text="زن"
             android:textColor="@color/black"
-            android:buttonTint="@color/purple_dark"
-            android:textSize="18sp" />
+            android:textSize="22sp" />
 
         <RadioButton
             android:id="@+id/radio_man"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
-            android:text="مرد"
             android:buttonTint="@color/purple_dark"
+            android:fontFamily="@font/fanavari_regular"
+
+            android:text="مرد"
             android:textColor="@color/black"
-            android:textSize="18sp" />
+            android:textSize="22sp" />
 
     </RadioGroup>
 
@@ -93,9 +99,10 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="40dp"
+        android:fontFamily="@font/fanavari_regular"
         android:text="وضعیت تأهل:"
         android:textColor="@color/black"
-        android:textSize="18sp"
+        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView" />
 
@@ -106,8 +113,10 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
         android:buttonTint="@color/purple_dark"
-        android:textColor="@color/black"
+        android:fontFamily="@font/fanavari_regular"
         android:text="متأهل"
+        android:textColor="@color/black"
+
         app:layout_constraintBottom_toBottomOf="@id/textView2"
         app:layout_constraintEnd_toStartOf="@id/textView2"
         app:layout_constraintTop_toTopOf="@id/textView2" />
@@ -117,7 +126,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
+
         android:buttonTint="@color/purple_dark"
+        android:fontFamily="@font/fanavari_regular"
         android:text="مجرد"
         android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="@id/textView2"
@@ -137,9 +148,11 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="40dp"
+        android:fontFamily="@font/fanavari_regular"
         android:text="تاریخ تولد:"
+
         android:textColor="@color/black"
-        android:textSize="18sp"
+        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView2" />
 
@@ -149,10 +162,11 @@
         android:layout_height="40dp"
         android:layout_marginEnd="24dp"
         android:background="@drawable/rounded_btn"
+        android:fontFamily="@font/fanavari_regular"
         android:padding="0dp"
         android:text="انتخاب"
         android:textColor="@color/white"
-        android:textSize="18sp"
+        android:textSize="22sp"
         app:layout_constraintBottom_toBottomOf="@id/textView3"
         app:layout_constraintEnd_toStartOf="@id/textView3"
         app:layout_constraintTop_toTopOf="@id/textView3" />
@@ -160,14 +174,15 @@
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_done"
-        android:layout_width="130dp"
+        android:layout_width="150dp"
         android:layout_height="50dp"
         android:layout_margin="24dp"
         android:backgroundTint="@color/purple_medium"
         android:drawableEnd="@drawable/ic_check"
+        android:fontFamily="@font/fanavari_regular"
         android:text="انجام شد"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="22sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

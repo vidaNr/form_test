@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_card"
+        android:elevation="4dp"
+        android:paddingHorizontal="56dp"
+        android:paddingVertical="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tv1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:fontFamily="@font/fanavari_regular"
+            android:text="نام کاربری:"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/fanavari_regular"
+            android:text="نام کاربری:"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="normal"
+            app:layout_constraintBottom_toBottomOf="@id/tv1"
+            app:layout_constraintEnd_toStartOf="@id/tv1"
+            app:layout_constraintTop_toTopOf="@id/tv1" />
+
+
+        <TextView
+            android:id="@+id/tv2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:fontFamily="@font/fanavari_regular"
+            android:text="جنسیت:"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv1" />
+
+        <TextView
+            android:id="@+id/tv_gender_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/fanavari_regular"
+            android:text="جنسیت:"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="normal"
+            app:layout_constraintBottom_toBottomOf="@id/tv2"
+            app:layout_constraintEnd_toStartOf="@id/tv2"
+            app:layout_constraintTop_toBottomOf="@id/tv1"
+            app:layout_constraintTop_toTopOf="@id/tv2" />
+
+        <TextView
+            android:id="@+id/tv3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:fontFamily="@font/fanavari_regular"
+            android:text="وضعیت تاهل:"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_gender_user" />
+
+        <TextView
+            android:id="@+id/tv_status_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/fanavari_regular"
+            android:text="وضعیت تاهل:"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="normal"
+            app:layout_constraintBottom_toBottomOf="@id/tv3"
+            app:layout_constraintEnd_toStartOf="@id/tv3"
+            app:layout_constraintTop_toBottomOf="@id/tv2"
+            app:layout_constraintTop_toTopOf="@id/tv3" />
+
+        <TextView
+            android:id="@+id/tv4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:fontFamily="@font/fanavari_regular"
+            android:text="تاریخ تولد:"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_status_user" />
+
+        <TextView
+            android:id="@+id/tv_birthday_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/fanavari_regular"
+            android:text="تاریخ تولد:"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="normal"
+            app:layout_constraintBottom_toBottomOf="@id/tv4"
+            app:layout_constraintEnd_toStartOf="@id/tv4"
+            app:layout_constraintTop_toBottomOf="@id/tv3"
+            app:layout_constraintTop_toTopOf="@id/tv4" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_confirm"
+            android:layout_width="70dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/rounded_btn"
+            android:fontFamily="@font/fanavari_regular"
+            android:text="تایید"
+            android:textColor="@color/content2"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_birthday_user" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>
