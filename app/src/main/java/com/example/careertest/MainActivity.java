@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
 
         userDialogBinding.btnConfirm.setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, ListUserActivity.class));
-            finish();
         });
 
     }
@@ -128,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         // status marital
         if (binding.cbMarried.isChecked()) {
             editor.putString("user-marital-status", "متاهل");
+            binding.cbSingle.setSelected(false);
         } else {
             editor.putString("user-marital-status", "مجرد");
         }
@@ -147,13 +147,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showInfoDialog() {
-
+        Bundle bundle=new Bundle();
+        if(!bundle.getBoolean("edit", false)){
         userDialogBinding.tvUsername.setText(sharedPref.getString("user-name", null));
         userDialogBinding.tvGenderUser.setText(sharedPref.getString("user-gender", null));
         userDialogBinding.tvStatusUser.setText(sharedPref.getString("user-marital-status", null));
         userDialogBinding.tvBirthdayUser.setText(sharedPref.getString("user-birthday", null));
         dialog.setContentView(detailView);
-        dialog.show();
+        dialog.show();}
+        else {
+            dialog.dismiss();
+        }
 
     }
 

@@ -31,20 +31,14 @@ import com.karumi.dexter.listener.single.PermissionListener;
 public class SplashActivity extends AppCompatActivity {
 
     private ActivitySplashBinding binding;
-    private Dexter dexter;
     private Dialog dialog;
     private PermissionDialogBinding permissionBinding;
 
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
-    private String permissions[] = new String[]{
-            android.Manifest.permission.READ_SMS,
-            android.Manifest.permission.CAMERA,
-            android.Manifest.permission.READ_MEDIA_IMAGES,
-            android.Manifest.permission.READ_EXTERNAL_STORAGE
-    };
-    private Boolean[] isDeny = new Boolean[4];
-    private Boolean isCheckedPermission=false;
+    private int repeat = 0;
+    private Boolean[] isDeny = new Boolean[3];
+    private Boolean isCheckedPermission = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,11 +50,14 @@ public class SplashActivity extends AppCompatActivity {
 
 
         sharedPref = getSharedPreferences("user-data", Context.MODE_PRIVATE);
-        boolean isCheckedPermission=sharedPref.getBoolean("access-resources", false);
+        editor = sharedPref.edit();
+        isCheckedPermission = sharedPref.getBoolean("access-resources", false);
 
-        if (!isCheckedPermission){
+        if (!isCheckedPermission) {
             checkSmsDialog();
-        }else {
+            editor.putBoolean("access-resources", true);
+            editor.apply();
+        } else {
             goMain();
         }
 
@@ -115,15 +112,12 @@ public class SplashActivity extends AppCompatActivity {
             isDeny[0] = false;
             checkCameraDialog();
         });
-        permissionBinding.btnPositive.setOnClickListener(view -> {
+        permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
             //camera
             isDeny[0] = true;
             checkCameraDialog();
         });
-
-        //TODO Don't ask again
-//        permissionBinding.cbAsk.isChecked() ? permissionBinding.btnPositive.setFocusable(false) : permissionBinding.btnPositive.setFocusable(true)
 
         permissionBinding.cbAsk.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @SuppressLint("ResourceAsColor")
@@ -179,7 +173,7 @@ public class SplashActivity extends AppCompatActivity {
             isDeny[1] = false;
             checkMediaDialog();
         });
-        permissionBinding.btnPositive.setOnClickListener(view -> {
+        permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
             //media
             isDeny[1] = true;
@@ -218,35 +212,35 @@ public class SplashActivity extends AppCompatActivity {
 
 
         permissionBinding.btnPositive.setOnClickListener(view -> {
-            Dexter.withContext(this)
-                    .withPermission(Manifest.permission.READ_MEDIA_IMAGES)
-                    .withListener(new PermissionListener() {
+            /*Dexter.withContext(this)
+                    .withPermissions(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    .withListener(new MultiplePermissionsListener() {
                         @Override
-                        public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
-                            isDeny[2] = false;
-                            goMain();
+                        public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
+                            if (multiplePermissionsReport.areAllPermissionsGranted()) {
+                                isDeny[2] = false;
+                                goMain();
+                            } else if (multiplePermissionsReport.isAnyPermissionPermanentlyDenied()) {
+                                isDeny[2] = true;
+                                // check permissions
+                                checkPermissions();
+                            } else checkPermissions();
 
                         }
 
                         @Override
-                        public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
-                            isDeny[2] = true;
-                            // check permissions
-                            checkPermissions();
-
-                        }
-
-                        @Override
-                        public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+                        public void onPermissionRationaleShouldBeShown(List<PermissionRequest> list, PermissionToken permissionToken) {
                             permissionToken.continuePermissionRequest();
+
                         }
-                    }).check();
+
+                    }).check();*/
             dialog.dismiss();
             // check permissions
             isDeny[2] = false;
-            checkPermissions();
+            goMain();
         });
-        permissionBinding.btnPositive.setOnClickListener(view -> {
+        permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
             isDeny[2] = true;
             // check permissions
@@ -276,22 +270,23 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void checkPermissions() {
-        if (isDeny[0]) {
-            isDeny[0] = null;
-            checkSmsDialog();
-        } else if (isDeny[1]) {
-            isDeny[1] = null;
-            checkCameraDialog();
-        } else {
-            isDeny[2] = null;
-            checkMediaDialog();
-        }
-
-        if (isDeny[0] && isDeny[1] && isDeny[2]) {
+        repeat = 0;
+        if (repeat == 0) {
+            if (isDeny[0]) {
+//                isDeny[0] = null;
+                checkSmsDialog();
+            } else if (isDeny[1]) {
+//                isDeny[1] = null;
+                checkCameraDialog();
+            } else {
+//                isDeny[2] = null;
+                checkMediaDialog();
+            }
+            repeat++;
+        } else if (repeat >= 1) {
             settingDialog();
-        } else {
-            goMain();
-        }
+            repeat++;
+        } else goMain();
 
 
     }

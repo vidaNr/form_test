@@ -50,14 +50,8 @@ public class ListUserActivity extends AppCompatActivity {
 
             @Override
             protected void editInfo(String editUser) {
-//                Bundle bundle=new Bundle();
-//                bundle.putBoolean("from-list-activity",true);
-//                bundle.putString("user-name",sharedPref.getString("user-name", null));
-//                bundle.putString("user-gender",sharedPref.getString("user-gender", null));
-//                bundle.putString("user-marital-status",sharedPref.getString("user-marital-status", null));
-//                bundle.putString("user-birthday",sharedPref.getString("user-birthday", null));
-//                startActivity(new Intent(ListUserActivity.this, MainActivity.class),bundle);
-//                finish();
+                Bundle bundle=new Bundle();
+                bundle.putBoolean("edit",true);
                 onBackPressed();
             }
 
