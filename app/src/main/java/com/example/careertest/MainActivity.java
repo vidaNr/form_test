@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPref = getSharedPreferences("user-data", Context.MODE_PRIVATE);
         editor = sharedPref.edit();
+        editor.putBoolean("access-resources",true);
 
 
         // select date

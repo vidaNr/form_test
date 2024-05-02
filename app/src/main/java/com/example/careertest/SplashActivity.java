@@ -1,8 +1,11 @@
 package com.example.careertest;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,31 +13,38 @@ import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.widget.CompoundButton;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.example.careertest.databinding.ActivitySplashBinding;
 import com.example.careertest.databinding.PermissionDialogBinding;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 
 
 public class SplashActivity extends AppCompatActivity {
 
-    Dialog dialog;
-    PermissionDialogBinding permissionBinding;
-    ActivitySplashBinding binding;
-    Boolean accessSMS = false;
-    Boolean accessCamera = false;
-    Boolean accessMemory = false;
+    private ActivitySplashBinding binding;
+    private Dexter dexter;
+    private Dialog dialog;
+    private PermissionDialogBinding permissionBinding;
 
-
-    private static final int REQUEST_CODE_PERMISSIONS = 101;
+    private SharedPreferences sharedPref;
+    private SharedPreferences.Editor editor;
+    private String permissions[] = new String[]{
+            android.Manifest.permission.READ_SMS,
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.READ_MEDIA_IMAGES,
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+    };
+    private Boolean[] isDeny = new Boolean[4];
+    private Boolean isCheckedPermission=false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,81 +52,20 @@ public class SplashActivity extends AppCompatActivity {
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
-        //create dialog
         initPermissionDialog();
 
-        checkPermissionDialog();
 
+        sharedPref = getSharedPreferences("user-data", Context.MODE_PRIVATE);
+        boolean isCheckedPermission=sharedPref.getBoolean("access-resources", false);
 
-    }
-
-    private void checkPermissionDialog() {
-
-
-        String[] permissionsNeeded = {
-                android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                android.Manifest.permission.CAMERA,
-                android.Manifest.permission.READ_SMS
-
-        };
-
-        List<String> permissionsToRequest = new ArrayList<>();
-        for (String permission : permissionsNeeded) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(permission);
-                settingDialog();
-            }
-        }
-
-        if (!permissionsToRequest.isEmpty()) {
-            ActivityCompat.requestPermissions(this, permissionsToRequest.toArray(new String[0]),
-                    REQUEST_CODE_PERMISSIONS);
-        } else {
-            // All permissions are already granted
+        if (!isCheckedPermission){
+            checkSmsDialog();
+        }else {
             goMain();
         }
 
+
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            boolean allPermissionsGranted = true;
-            if (grantResults.length > 0) {
-                for (int result : grantResults) {
-                    if (result != PackageManager.PERMISSION_GRANTED) {
-                        allPermissionsGranted = false;
-                        break;
-                    }
-                }
-            }
-            if (allPermissionsGranted) {
-                goMain();
-            } else {
-                // Permission denied, disable functionality that depends on this permission.
-                settingDialog();
-            }
-        }
-    }
-
-
-    private void goMain() {
-
-        Handler handler = new Handler();
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                startActivity(new Intent(SplashActivity.this, MainActivity.class));
-                finish();
-            }
-        };
-        handler.postDelayed(runnable, 50);
-    }
-
-    // check what its work?????
 
     private void initPermissionDialog() {
 
@@ -131,35 +80,67 @@ public class SplashActivity extends AppCompatActivity {
 
     }
 
-    private void checkSMSDialog() {
+    private void checkSmsDialog() {
 
         permissionBinding.tvTitleDialog.setText("دسترسی پیامک");
         permissionBinding.tvContentDialog.setText("آیا اجازه دسترسی به پیامک ها را می دهید؟");
         permissionBinding.btnPositive.setText("تایید");
         permissionBinding.btnNegative.setText("لغو");
+        dialog.show();
 
 
         permissionBinding.btnPositive.setOnClickListener(view -> {
-            ActivityCompat.requestPermissions(SplashActivity.this, new String[]{android.Manifest.permission.READ_SMS}, REQUEST_CODE_PERMISSIONS);
+            Dexter.withContext(this)
+                    .withPermission(Manifest.permission.READ_SMS)
+                    .withListener(new PermissionListener() {
+                        @Override
+                        public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
+                            //camera permission
+                            isDeny[0] = false;
+                            checkCameraDialog();
+                        }
+
+                        @Override
+                        public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
+                            isDeny[0] = true;
+                        }
+
+                        @Override
+                        public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+                            permissionToken.continuePermissionRequest();
+                        }
+                    }).check();
             dialog.dismiss();
+            //camera
+            isDeny[0] = false;
             checkCameraDialog();
         });
-        permissionBinding.btnNegative.setOnClickListener(view -> {
+        permissionBinding.btnPositive.setOnClickListener(view -> {
             dialog.dismiss();
-
+            //camera
+            isDeny[0] = true;
             checkCameraDialog();
-
         });
-
-        if (permissionBinding.cbAsk.isChecked()) {
-            permissionBinding.btnPositive.setEnabled(false);
-            permissionBinding.btnPositive.setFocusable(false);
-        }
 
         //TODO Don't ask again
 //        permissionBinding.cbAsk.isChecked() ? permissionBinding.btnPositive.setFocusable(false) : permissionBinding.btnPositive.setFocusable(true)
 
-        dialog.show();
+        permissionBinding.cbAsk.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @SuppressLint("ResourceAsColor")
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    permissionBinding.btnPositive.setClickable(false);
+                    permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn2);
+                    isDeny[0] = true;
+                } else {
+                    permissionBinding.btnPositive.setClickable(true);
+                    permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn);
+                    isDeny[0] = false;
+                }
+            }
+        });
+
 
     }
 
@@ -169,59 +150,166 @@ public class SplashActivity extends AppCompatActivity {
         permissionBinding.tvContentDialog.setText("آیا اجازه دسترسی به دوربین می دهید؟");
         permissionBinding.btnPositive.setText("تایید");
         permissionBinding.btnNegative.setText("لغو");
+        dialog.show();
 
 
         permissionBinding.btnPositive.setOnClickListener(view -> {
-            ActivityCompat.requestPermissions(SplashActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CODE_PERMISSIONS);
-            dialog.dismiss();
+            Dexter.withContext(this)
+                    .withPermission(Manifest.permission.CAMERA)
+                    .withListener(new PermissionListener() {
+                        @Override
+                        public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
+                            //Media permission
+                            isDeny[1] = false;
+                            checkMediaDialog();
+                        }
 
-            goMain();
-//            checkMemoryDialog();
-        });
-        permissionBinding.btnNegative.setOnClickListener(view -> {
-            dialog.dismiss();
-            settingDialog();
-//            checkMemoryDialog();
-        });
+                        @Override
+                        public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
+                            isDeny[1] = true;
+                        }
 
+                        @Override
+                        public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+                            permissionToken.continuePermissionRequest();
+                        }
+                    }).check();
+            dialog.dismiss();
+            //media
+            isDeny[1] = false;
+            checkMediaDialog();
+        });
+        permissionBinding.btnPositive.setOnClickListener(view -> {
+            dialog.dismiss();
+            //media
+            isDeny[1] = true;
+            checkMediaDialog();
+        });
 
         //TODO Don't ask again
 //        permissionBinding.cbAsk.isChecked() ? permissionBinding.btnPositive.setFocusable(false) : permissionBinding.btnPositive.setFocusable(true)
-        dialog.show();
+
+        permissionBinding.cbAsk.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @SuppressLint("ResourceAsColor")
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    permissionBinding.btnPositive.setClickable(false);
+                    permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn2);
+                    isDeny[1] = true;
+                } else {
+                    permissionBinding.btnPositive.setClickable(true);
+                    permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn);
+                    isDeny[1] = false;
+                }
+            }
+        });
+
 
     }
 
-    private void checkMemoryDialog() {
+    private void checkMediaDialog() {
 
         permissionBinding.tvTitleDialog.setText("دسترسی حافظه");
-        permissionBinding.tvContentDialog.setText("آیا اجازه دسترسی به حافظه می دهید؟");
+        permissionBinding.tvContentDialog.setText("آیا اجازه دسترسی به حافظه را می دهید؟");
         permissionBinding.btnPositive.setText("تایید");
         permissionBinding.btnNegative.setText("لغو");
+        dialog.show();
 
 
         permissionBinding.btnPositive.setOnClickListener(view -> {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
+            Dexter.withContext(this)
+                    .withPermission(Manifest.permission.READ_MEDIA_IMAGES)
+                    .withListener(new PermissionListener() {
+                        @Override
+                        public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
+                            isDeny[2] = false;
+                            goMain();
+
+                        }
+
+                        @Override
+                        public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
+                            isDeny[2] = true;
+                            // check permissions
+                            checkPermissions();
+
+                        }
+
+                        @Override
+                        public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+                            permissionToken.continuePermissionRequest();
+                        }
+                    }).check();
             dialog.dismiss();
-//            goMain();
-//            settingDialog();
+            // check permissions
+            isDeny[2] = false;
+            checkPermissions();
         });
-        permissionBinding.btnNegative.setOnClickListener(view -> {
+        permissionBinding.btnPositive.setOnClickListener(view -> {
             dialog.dismiss();
-//goMain();
-            settingDialog();
+            isDeny[2] = true;
+            // check permissions
+            checkPermissions();
         });
 
+        //TODO Don't ask again
+//        permissionBinding.cbAsk.isChecked() ? permissionBinding.btnPositive.setFocusable(false) : permissionBinding.btnPositive.setFocusable(true)
 
-//        if (!permissionBinding.cbAsk.isChecked()) {
-//            permissionBinding.btnPositive.setFocusable(false);
-//            accessMemory = false;
-//        }
-        dialog.show();
+        permissionBinding.cbAsk.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @SuppressLint("ResourceAsColor")
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    permissionBinding.btnPositive.setClickable(false);
+                    permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn2);
+                    isDeny[2] = true;
+                } else {
+                    permissionBinding.btnPositive.setClickable(true);
+                    permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn);
+                    isDeny[2] = false;
+                }
+            }
+        });
+
 
     }
 
-    private void settingDialog() {
+    private void checkPermissions() {
+        if (isDeny[0]) {
+            isDeny[0] = null;
+            checkSmsDialog();
+        } else if (isDeny[1]) {
+            isDeny[1] = null;
+            checkCameraDialog();
+        } else {
+            isDeny[2] = null;
+            checkMediaDialog();
+        }
 
+        if (isDeny[0] && isDeny[1] && isDeny[2]) {
+            settingDialog();
+        } else {
+            goMain();
+        }
+
+
+    }
+
+    private void goMain() {
+
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                finish();
+            }
+        };
+        handler.postDelayed(runnable, 50);
+    }
+
+    private void settingDialog() {
 
         permissionBinding.tvTitleDialog.setText("تنطیمات");
         permissionBinding.tvContentDialog.setText("در صورتی که دسترسی های خواسته شده را به برنامه بدهید، میتوانید از آن استفاده کنید.");
@@ -236,10 +324,7 @@ public class SplashActivity extends AppCompatActivity {
             Uri uri = Uri.fromParts("package", getPackageName(), null);
             intent.setData(uri);
             startActivity(intent);
-            checkPermissionDialog();
         });
-
-
 
     }
 
