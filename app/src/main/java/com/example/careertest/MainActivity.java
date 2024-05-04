@@ -15,6 +15,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.careertest.databinding.ActivityMainBinding;
 import com.example.careertest.databinding.DateDialogBinding;
 import com.example.careertest.databinding.DetailUserDialogBinding;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,9 +36,11 @@ public class MainActivity extends AppCompatActivity {
     String[] months = new String[]{
             "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
             "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"};
-    String name, birthDate, month, marital, gender;
 
-    Bundle bundle;
+    String birthday, month, userString;
+    User user ;
+
+    Gson gson = new Gson();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,45 +48,51 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        init();
         initDateDialog();
 
-        sharedPref = getSharedPreferences("user-data", Context.MODE_PRIVATE);
-        editor = sharedPref.edit();
-        editor.putBoolean("access-resources",true);
+        //check edit
+        if (getIntent().getBooleanExtra("bool-edit", false)) {
+            user = (User) getIntent().getExtras().getSerializable("edit-user");
+            binding.ietName.setText(user.getName());
+            if (user.getGender() == "زن") {
+                binding.radioMan.setChecked(true);
+            } else
+                binding.radioWoman.setChecked(true);
+            if (user.getMarital_Status() == "متاهل")
+                binding.cbMarried.setChecked(true);
+            else
+                binding.cbSingle.setChecked(true);
 
+            //birthday
+            binding.btnSelectDate.setOnClickListener(view -> {
+//                setDateEdit(user);
+                setDate();
+            });
+        }
 
-        // select date
-        binding.btnSelectDate.setOnClickListener(view -> {
-            setDate();
-
-        });
-
-        // confirm date
-        dateDialogBinding.btnConfirm.setOnClickListener(view -> {
-
-            for (int i = 0; i < months.length - 1; i++) {
-                if (i == dateDialogBinding.numMonth.getValue()) {
-                    month = months[i];
-                }
-            }
-            birthDate = String.valueOf(dateDialogBinding.numDay.getValue()) + "  "
-                    + month + "  " + String.valueOf(dateDialogBinding.numYear.getValue());
-
-            dialog.dismiss();
-        });
-
-        // confirm Info
-        binding.fabDone.setOnClickListener(view -> {
-            saveData();
-            showInfoDialog();
-        });
-
-        userDialogBinding.btnConfirm.setOnClickListener(view -> {
-            startActivity(new Intent(MainActivity.this, ListUserActivity.class));
-        });
+        clickedButtons();
 
     }
 
+
+//    private void setDateEdit(User user) {
+//
+//        Integer mon=user.getBirthMonth();
+//        mon--;
+//        dateDialogBinding.numDay.setValue(user.getBirthDay());
+//        dateDialogBinding.numMonth.setValue(mon);
+//        dateDialogBinding.numYear.setValue(user.getBirthYear());
+//        dialog.setContentView(dateView);
+//        dialog.show();
+//
+//    }
+
+    private void init() {
+        sharedPref = getSharedPreferences("permission", Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
+        editor.putBoolean("access-resources", true);
+    }
 
     private void initDateDialog() {
 
@@ -114,51 +128,83 @@ public class MainActivity extends AppCompatActivity {
         dateDialogBinding.numYear.setMaxValue(1403);
         dateDialogBinding.numYear.setValue(1370);
 
-        dialog.setContentView(dateView);
-        dialog.show();
+    }
+
+    private void clickedButtons() {
+
+        // select date
+        binding.btnSelectDate.setOnClickListener(view -> {
+            setDate();
+            dialog.setContentView(dateView);
+            dialog.show();
+
+        });
+
+        // confirm date dialog
+        dateDialogBinding.btnConfirm.setOnClickListener(view -> {
+            for (int i = 0; i < months.length - 1; i++) {
+                if (i == dateDialogBinding.numMonth.getValue()) {
+                    month = months[i];
+                    break;
+                }
+            }
+            birthday = dateDialogBinding.numDay.getValue() + "  "
+                    + month + "  " + dateDialogBinding.numYear.getValue();
+            dialog.dismiss();
+        });
+
+        // confirm Info
+        binding.fabDone.setOnClickListener(view -> {
+            saveData();
+            showInfoDialog();
+        });
+
+        userDialogBinding.btnConfirm.setOnClickListener(view -> {
+            startActivity(new Intent(MainActivity.this, ListUserActivity.class));
+            finish();
+        });
 
     }
 
     private void saveData() {
-
+        user = new User();
         //name
-        editor.putString("user-name", binding.ietName.getText().toString());
+        String name = binding.ietName.getText().toString();
+        user.setName(name);
 
         // status marital
-        if (binding.cbMarried.isChecked()) {
-            editor.putString("user-marital-status", "متاهل");
-            binding.cbSingle.setSelected(false);
+        if (binding.radioWoman.isChecked()) {
+            user.setGender("زن");
         } else {
-            editor.putString("user-marital-status", "مجرد");
+            user.setGender("مرد");
         }
-
         // gender
-        if (!binding.radioWoman.isChecked()) {
-            editor.putString("user-gender", "مرد");
+        if (binding.cbMarried.isChecked()) {
+            user.setMarital_Status("متاهل");
         } else {
-            editor.putString("user-gender", "زن");
+            user.setMarital_Status("مجرد");
         }
+        //birthday
+        user.setBirthDay(birthday);
+//            user= new User(name,m)
 
-        // birthday
-        editor.putString("user-birthday", birthDate);
 
+        userString = gson.toJson(user);
+        SharedPreferences sharedPref = getSharedPreferences("user-data", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(name, userString);
         editor.apply();
 
     }
 
     private void showInfoDialog() {
-        Bundle bundle=new Bundle();
-        if(!bundle.getBoolean("edit", false)){
-        userDialogBinding.tvUsername.setText(sharedPref.getString("user-name", null));
-        userDialogBinding.tvGenderUser.setText(sharedPref.getString("user-gender", null));
-        userDialogBinding.tvStatusUser.setText(sharedPref.getString("user-marital-status", null));
-        userDialogBinding.tvBirthdayUser.setText(sharedPref.getString("user-birthday", null));
+
+        userDialogBinding.tvUsername.setText(user.getName());
+        userDialogBinding.tvGenderUser.setText(user.getGender());
+        userDialogBinding.tvStatusUser.setText(user.getMarital_Status());
+        userDialogBinding.tvBirthdayUser.setText(user.getBirthDay());
         dialog.setContentView(detailView);
-        dialog.show();}
-        else {
-            dialog.dismiss();
-        }
+        dialog.show();
 
     }
-
 }

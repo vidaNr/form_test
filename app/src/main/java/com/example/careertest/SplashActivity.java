@@ -49,7 +49,7 @@ public class SplashActivity extends AppCompatActivity {
         initPermissionDialog();
 
 
-        sharedPref = getSharedPreferences("user-data", Context.MODE_PRIVATE);
+        sharedPref = getSharedPreferences("permission", Context.MODE_PRIVATE);
         editor = sharedPref.edit();
         isCheckedPermission = sharedPref.getBoolean("access-resources", false);
 
@@ -281,8 +281,8 @@ public class SplashActivity extends AppCompatActivity {
             } else {
 //                isDeny[2] = null;
                 checkMediaDialog();
+                repeat++;
             }
-            repeat++;
         } else if (repeat >= 1) {
             settingDialog();
             repeat++;

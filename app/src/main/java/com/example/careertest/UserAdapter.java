@@ -15,12 +15,12 @@ import java.util.List;
 
 public abstract class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
 
-    List<String> userNames;
+    List<User> users;
 
     Dialog dialog;
 
-    public UserAdapter(List<String> userNames) {
-        this.userNames = userNames;
+    public UserAdapter(List<User> users) {
+        this.users = users;
     }
 
     @NonNull
@@ -33,29 +33,29 @@ public abstract class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserV
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
 
-        holder.tvUserName.setText(userNames.get(position));
+        holder.tvUserName.setText(users.get(position).getName());
         holder.cvUser.setOnClickListener(view -> {
-            showUser(userNames.get(position));
+            showUser(users.get(position));
         });
         holder.ivEdit.setOnClickListener(view -> {
-            editInfo(userNames.get(position));
+            editInfo(users.get(position));
         });
         holder.ivDelete.setOnClickListener(view -> {
-            deleteInfo(userNames.get(position));
+            deleteInfo(users.get(position));
         });
 
     }
 
     @Override
     public int getItemCount() {
-        return userNames.size();
+        return users.size();
     }
 
-    protected abstract void deleteInfo(String deleteUser);
+    protected abstract void deleteInfo(User deleteUser);
 
-    protected abstract void editInfo(String editUser);
+    protected abstract void editInfo(User editUser);
 
-    public abstract void showUser(String username);
+    public abstract void showUser(User user);
 
     public class UserViewHolder extends RecyclerView.ViewHolder {
 
