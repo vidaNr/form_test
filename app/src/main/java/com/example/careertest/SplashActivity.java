@@ -37,8 +37,7 @@ public class SplashActivity extends AppCompatActivity {
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
     private int repeat = 0;
-    private Boolean[] isDeny = new Boolean[3];
-    private Boolean isCheckedPermission = false;
+    private Integer[] isDeny = new Integer[3];
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,10 +47,9 @@ public class SplashActivity extends AppCompatActivity {
 
         initPermissionDialog();
 
-
         sharedPref = getSharedPreferences("permission", Context.MODE_PRIVATE);
         editor = sharedPref.edit();
-        isCheckedPermission = sharedPref.getBoolean("access-resources", false);
+        boolean isCheckedPermission = sharedPref.getBoolean("access-resources", false);
 
         if (!isCheckedPermission) {
             checkSmsDialog();
@@ -60,8 +58,6 @@ public class SplashActivity extends AppCompatActivity {
         } else {
             goMain();
         }
-
-
     }
 
     private void initPermissionDialog() {
@@ -85,7 +81,6 @@ public class SplashActivity extends AppCompatActivity {
         permissionBinding.btnNegative.setText("لغو");
         dialog.show();
 
-
         permissionBinding.btnPositive.setOnClickListener(view -> {
             Dexter.withContext(this)
                     .withPermission(Manifest.permission.READ_SMS)
@@ -93,13 +88,13 @@ public class SplashActivity extends AppCompatActivity {
                         @Override
                         public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
                             //camera permission
-                            isDeny[0] = false;
+                            isDeny[0] = 0;
                             checkCameraDialog();
                         }
 
                         @Override
                         public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
-                            isDeny[0] = true;
+                            isDeny[0] = 1;
                         }
 
                         @Override
@@ -109,13 +104,13 @@ public class SplashActivity extends AppCompatActivity {
                     }).check();
             dialog.dismiss();
             //camera
-            isDeny[0] = false;
+            isDeny[0] = 1;
             checkCameraDialog();
         });
         permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
             //camera
-            isDeny[0] = true;
+            isDeny[0] = 0;
             checkCameraDialog();
         });
 
@@ -126,11 +121,10 @@ public class SplashActivity extends AppCompatActivity {
                 if (b) {
                     permissionBinding.btnPositive.setClickable(false);
                     permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn2);
-                    isDeny[0] = true;
+                    isDeny[0] = 2;
                 } else {
                     permissionBinding.btnPositive.setClickable(true);
                     permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn);
-                    isDeny[0] = false;
                 }
             }
         });
@@ -154,13 +148,13 @@ public class SplashActivity extends AppCompatActivity {
                         @Override
                         public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
                             //Media permission
-                            isDeny[1] = false;
+                            isDeny[1] = 0;
                             checkMediaDialog();
                         }
 
                         @Override
                         public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
-                            isDeny[1] = true;
+                            isDeny[1] = 1;
                         }
 
                         @Override
@@ -170,13 +164,13 @@ public class SplashActivity extends AppCompatActivity {
                     }).check();
             dialog.dismiss();
             //media
-            isDeny[1] = false;
+            isDeny[1] = 1;
             checkMediaDialog();
         });
         permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
             //media
-            isDeny[1] = true;
+            isDeny[1] = 0;
             checkMediaDialog();
         });
 
@@ -190,11 +184,10 @@ public class SplashActivity extends AppCompatActivity {
                 if (b) {
                     permissionBinding.btnPositive.setClickable(false);
                     permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn2);
-                    isDeny[1] = true;
+                    isDeny[1] = 2;
                 } else {
                     permissionBinding.btnPositive.setClickable(true);
                     permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn);
-                    isDeny[1] = false;
                 }
             }
         });
@@ -237,12 +230,13 @@ public class SplashActivity extends AppCompatActivity {
                     }).check();*/
             dialog.dismiss();
             // check permissions
-            isDeny[2] = false;
-            goMain();
+            isDeny[2] = 1;
+            checkPermissions();
+//            goMain();
         });
         permissionBinding.btnNegative.setOnClickListener(view -> {
             dialog.dismiss();
-            isDeny[2] = true;
+            isDeny[2] = 0;
             // check permissions
             checkPermissions();
         });
@@ -257,11 +251,10 @@ public class SplashActivity extends AppCompatActivity {
                 if (b) {
                     permissionBinding.btnPositive.setClickable(false);
                     permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn2);
-                    isDeny[2] = true;
+                    isDeny[2] = 2;
                 } else {
                     permissionBinding.btnPositive.setClickable(true);
                     permissionBinding.btnPositive.setBackgroundResource(R.drawable.rounded_btn);
-                    isDeny[2] = false;
                 }
             }
         });
@@ -270,29 +263,29 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void checkPermissions() {
-        repeat = 0;
+
         if (repeat == 0) {
-            if (isDeny[0]) {
-//                isDeny[0] = null;
+            if (isDeny[0] == 0) {
+                isDeny[0] = 2;
                 checkSmsDialog();
-            } else if (isDeny[1]) {
-//                isDeny[1] = null;
+            } else if (isDeny[1] == 0) {
+                isDeny[1] = 2;
                 checkCameraDialog();
             } else {
-//                isDeny[2] = null;
+                isDeny[2] = 2;
                 checkMediaDialog();
                 repeat++;
             }
-        } else if (repeat >= 1) {
-            settingDialog();
-            repeat++;
+        } else if (repeat == 1) {
+            if (isDeny[0] == 2 || isDeny[1] == 2 || isDeny[2] == 2) {
+                settingDialog();
+                repeat++;
+            }
         } else goMain();
 
 
     }
-
     private void goMain() {
-
         Handler handler = new Handler();
         Runnable runnable = new Runnable() {
             @Override
@@ -303,7 +296,6 @@ public class SplashActivity extends AppCompatActivity {
         };
         handler.postDelayed(runnable, 50);
     }
-
     private void settingDialog() {
 
         permissionBinding.tvTitleDialog.setText("تنطیمات");
